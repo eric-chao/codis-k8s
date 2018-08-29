@@ -10,7 +10,7 @@ spec:
 #  storageClassName: gluster-vol-default
   resources:
     requests:
-      storage: 20Gi
+      storage: STORAGE
   selector:
     matchLabels:
       type: codis-pv-PRODUCT_NAME-NUM

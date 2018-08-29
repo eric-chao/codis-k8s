@@ -8,7 +8,7 @@ metadata:
     volume.beta.kubernetes.io/storage-class: gluster-vol-default
 spec:
   capacity:
-    storage: 20Gi
+    storage: STORAGE
   accessModes:
     - ReadWriteOnce
   hostPath:

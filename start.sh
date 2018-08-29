@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 if [ $(kubectl get pods -l app=adhoc-zk |grep Running |wc -l) == 0 ]; then
     echo "start create zookeeper cluster"
     kubectl create -f zk/zk-pv.yaml
@@ -12,6 +14,7 @@ if [ $(kubectl get pods -l app=adhoc-zk |grep Running |wc -l) == 0 ]; then
 fi
 
 product_name=$2
+storage=10Gi
 #product_auth="auth"
 if [ x"$product_name" = x ]; then
     echo 'Please use below command to start server:'
@@ -19,30 +22,28 @@ if [ x"$product_name" = x ]; then
     exit 1
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 function remove_all() {
     sed "s/PRODUCT_NAME/$product_name/g" codis-service-template.yaml | kubectl delete -f -
     sed "s/PRODUCT_NAME/$product_name/g" codis-dashboard-template.yaml | kubectl delete -f -
     sed "s/PRODUCT_NAME/$product_name/g" codis-proxy-template.yaml | kubectl delete -f -
-    sed "s/PRODUCT_NAME/$product_name/g" codis-server-template.yaml | kubectl delete -f -
     sed "s/PRODUCT_NAME/$product_name/g" codis-ha-template.yaml | kubectl delete -f -
     sed "s/PRODUCT_NAME/$product_name/g" codis-fe-template.yaml | kubectl delete -f -
+    sed "s/PRODUCT_NAME/$product_name/g ; s/STORAGE/$storage/g" codis-server-template.yaml | kubectl delete -f -
 }
 
 function create_pv() {
     num=$1
-    name=datadir-codis-server-$product_name-$num
-    if [ $(kubectl get pvc |grep $name |wc -l) == 0 ]; then
-        sed "s/PRODUCT_NAME/$product_name/g ; s/NUM/$num/g" glusterfs/glusterfs-pvc-local.yaml | kubectl create -f -
+    name=codis-pv-$product_name-$num
+    if [ $(kubectl get pv |grep $name |wc -l) == 0 ]; then
+        sed "s/PRODUCT_NAME/$product_name/g ; s/NUM/$num/g ; s/STORAGE/$storage/g" glusterfs/glusterfs-pv-local.yaml | kubectl create -f -
     fi
 }
 
 function create_pvc() {
     num=$1
-    name=codis-pv-$product_name-$num
-    if [ $(kubectl get pv |grep $name |wc -l) == 0 ]; then
-        sed "s/PRODUCT_NAME/$product_name/g ; s/NUM/$num/g" glusterfs/glusterfs-pv-local.yaml | kubectl create -f -
+    name=datadir-codis-server-$product_name-$num
+    if [ $(kubectl get pvc |grep $name |wc -l) == 0 ]; then
+        sed "s/PRODUCT_NAME/$product_name/g ; s/NUM/$num/g ; s/STORAGE/$storage/g" glusterfs/glusterfs-pvc-local.yaml | kubectl create -f -
     fi
 }
 
@@ -66,8 +67,8 @@ buildup)
     sed "s/PRODUCT_NAME/$product_name/g" codis-dashboard-template.yaml | kubectl create -f -
     while [ $(kubectl get pods -l app=codis-dashboard-$product_name |grep Running |wc -l) != 1 ]; do sleep 1; done;
     sed "s/PRODUCT_NAME/$product_name/g" codis-proxy-template.yaml | kubectl create -f -
-    for (( i=0; i<2; i++)); do create_pv $i; create_pvc $i; done;
-    sed "s/PRODUCT_NAME/$product_name/g" codis-server-template.yaml | kubectl create -f -
+    for (( i=0; i<4; i++)); do create_pv $i; create_pvc $i; done;
+    sed "s/PRODUCT_NAME/$product_name/g ; s/STORAGE/$storage/g" codis-server-template.yaml | kubectl create -f -
     servers=$(grep "replicas" codis-server-template.yaml |awk  '{print $2}')
     while [ $(kubectl get pods -l app=codis-server-$product_name |grep Running |wc -l) != $servers ]; do sleep 1; done;
     kubectl exec -it codis-server-$product_name-0 -- codis-admin  --dashboard=codis-dashboard-$product_name:18080 --rebalance --confirm
@@ -94,7 +95,7 @@ scale-server)
     if [ $cur == $des ]; then
         echo "current server == desired server, return"
     elif [ $cur -lt $des ]; then
-        for (( i=$des-$cur+1; i<$des; i++)); do create_pv $i; create_pvc $i; done;
+        for (( i=$des-$cur; i<$des; i++)); do create_pv $i; create_pvc $i; done;
         kubectl scale statefulsets codis-server-$product_name --replicas=$des
         while [ $(kubectl get pods -l app=codis-server-$product_name |grep Running |wc -l) != $3 ]; do sleep 1; done;
         kubectl exec -it codis-server-$product_name-0 -- codis-admin  --dashboard=codis-dashboard-$product_name:18080 --rebalance --confirm
