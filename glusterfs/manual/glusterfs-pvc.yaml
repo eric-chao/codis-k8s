@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datadir-codis-server-test-0
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  accessModes:
+    - ReadWriteMany
+#  storageClassName: gluster-vol-default
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: codis-pv-test-0
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datadir-codis-server-test-1
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  accessModes:
+    - ReadWriteMany
+#  storageClassName: gluster-vol-default
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: codis-pv-test-1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datadir-codis-server-test-2
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  accessModes:
+    - ReadWriteMany
+#  storageClassName: gluster-vol-default
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: codis-pv-test-2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datadir-codis-server-test-3
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  accessModes:
+    - ReadWriteMany
+#  storageClassName: gluster-vol-default
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: codis-pv-test-3

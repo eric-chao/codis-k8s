@@ -1,0 +1,41 @@
+kind: PersistentVolumeClaim 
+apiVersion: v1 
+metadata: 
+  name: datadir-adhoc-zk-0
+spec: 
+  accessModes: 
+    - ReadWriteOnce
+  resources: 
+    requests: 
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: local0
+---
+kind: PersistentVolumeClaim 
+apiVersion: v1 
+metadata: 
+  name: datadir-adhoc-zk-1
+spec: 
+  accessModes: 
+    - ReadWriteOnce
+  resources: 
+    requests: 
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: local1
+---
+kind: PersistentVolumeClaim 
+apiVersion: v1 
+metadata: 
+  name: datadir-adhoc-zk-2
+spec: 
+  accessModes: 
+    - ReadWriteOnce
+  resources: 
+    requests: 
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: local2

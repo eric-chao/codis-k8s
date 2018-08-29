@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: adhoc-zk-headless
+  labels:
+    app: adhoc-zk-headless
+spec:
+  ports:
+  - port: 2888
+    name: server
+  - port: 3888
+    name: leader-election
+  clusterIP: None
+  selector:
+    app: adhoc-zk
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adhoc-zk-config
+data:
+  ensemble: "adhoc-zk-0;adhoc-zk-1;adhoc-zk-2"
+  jvm.heap: "2G"
+  tick: "2000"
+  init: "10"
+  sync: "5"
+  client.cnxns: "60"
+  snap.retain: "3"
+  purge.interval: "1"
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: adhoc-zk-budget
+spec:
+  selector:
+    matchLabels:
+      app: adhoc-zk
+  minAvailable: 2
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: adhoc-zk
+spec:
+  serviceName: adhoc-zk-headless
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: adhoc-zk
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+        scheduler.alpha.kubernetes.io/affinity: >
+            {
+              "podAntiAffinity": {
+                "requiredDuringSchedulingRequiredDuringExecution": [{
+                  "labelSelector": {
+                    "matchExpressions": [{
+                      "key": "app",
+                      "operator": "In",
+                      "values": ["adhoc-zk-headless"]
+                    }]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }]
+              }
+            }
+    spec:
+      containers:
+      - name: adhoc-k8szk
+        imagePullPolicy: IfNotPresent
+        image: registry.appadhoc.com:30443/adhoc-k8szk:v1
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1"
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: server
+        - containerPort: 3888
+          name: leader-election
+        env:
+        - name : ZK_ENSEMBLE
+          valueFrom:
+            configMapKeyRef:
+              name: adhoc-zk-config
+              key: ensemble
+        - name : ZK_HEAP_SIZE
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: jvm.heap
+        - name : ZK_TICK_TIME
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: tick
+        - name : ZK_INIT_LIMIT
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: init
+        - name : ZK_SYNC_LIMIT
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: tick
+        - name : ZK_MAX_CLIENT_CNXNS
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: client.cnxns
+        - name: ZK_SNAP_RETAIN_COUNT
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: snap.retain
+        - name: ZK_PURGE_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+                name: adhoc-zk-config
+                key: purge.interval
+        - name: ZK_CLIENT_PORT
+          value: "2181"
+        - name: ZK_SERVER_PORT
+          value: "2888"
+        - name: ZK_ELECTION_PORT
+          value: "3888"
+        command:
+        - sh
+        - -c
+        - zkGenConfig.sh && zkServer.sh start-foreground
+        readinessProbe:
+          exec:
+            command:
+            - "zkOk.sh"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - "zkOk.sh"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: datadir
+          mountPath: /var/lib/zookeeper
+      imagePullSecrets:
+        - name: adhoc-docker-registry
+      restartPolicy: Always   
+#      securityContext:
+#        runAsUser: 0
+#        fsGroup: 0
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+      annotations:
+        volume.beta.kubernetes.io/storage-class: anything
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+

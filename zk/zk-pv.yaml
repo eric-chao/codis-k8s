@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zk-pv0
+  labels:
+    type: local0
+spec:
+#  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/zookeeper0"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zk-pv1
+  labels:
+    type: local1
+spec:
+#  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/zookeeper1"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zk-pv2
+  labels:
+    type: local2
+spec:
+#  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/zookeeper2"
+

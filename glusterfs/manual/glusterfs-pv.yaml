@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: codis-pv-test-0
+  labels:
+    type: codis-pv-test-0
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: "glusterfs-cluster"
+    path: "adhoc-data"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: codis-pv-test-1
+  labels:
+    type: codis-pv-test-1
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: "glusterfs-cluster"
+    path: "adhoc-data"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: codis-pv-test-2
+  labels:
+    type: codis-pv-test-2
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: "glusterfs-cluster"
+    path: "adhoc-data"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: codis-pv-test-3
+  labels:
+    type: codis-pv-test-3
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: "glusterfs-cluster"
+    path: "adhoc-data"
+    readOnly: false

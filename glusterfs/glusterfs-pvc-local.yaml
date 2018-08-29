@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datadir-codis-server-PRODUCT_NAME-NUM
+  annotations:
+    volume.beta.kubernetes.io/storage-class: gluster-vol-default
+spec:
+  accessModes:
+    - ReadWriteOnce
+#  storageClassName: gluster-vol-default
+  resources:
+    requests:
+      storage: 20Gi
+  selector:
+    matchLabels:
+      type: codis-pv-PRODUCT_NAME-NUM
