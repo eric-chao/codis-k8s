@@ -6,6 +6,7 @@ Please check start.sh for details.
 # Examples:
 >     # to clean-up all the deployments, 
 >     # except pv and pvc
+>     # test is the product_name
 >     ./start.sh cleanup test
 
 >     # to build-up all the deployments.
@@ -19,5 +20,5 @@ Please check start.sh for details.
 >     ./start.sh scale-server test 8
 
 # Note:
->     reduce the number of codis-server-$product_name, does not support.
+>     Reduce the number of codis-server-$product_name, does not support.
 

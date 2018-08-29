@@ -35,7 +35,8 @@ spec:
   ports:
     - port: 11080
       name: proxy
-    - port: 19000
+    - port: 6379
+      targetPort: 19000
       name: admin
   selector:
     app: codis-proxy-PRODUCT_NAME
