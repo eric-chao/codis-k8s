@@ -16,7 +16,7 @@ spec:
         image: registry.appadhoc.com:30443/adhoc-cache:3.2
         imagePullPolicy: IfNotPresent
         command: ["codis-proxy"]
-        args: ["-l","log/$(POD_NAME).log","-c","$(CODIS_PATH)/config/proxy.toml","--host-admin","$(POD_IP):11080","--host-proxy","$(POD_IP):19000","--zookeeper","$(ZK_ADDR)","--product_name","PRODUCT_NAME","--pidfile","log/proxy.pid"]
+        args: ["-l","/tmp/$(POD_NAME).log","-c","$(CODIS_PATH)/config/proxy.toml","--host-admin","$(POD_IP):11080","--host-proxy","$(POD_IP):19000","--zookeeper","$(ZK_ADDR)","--product_name","PRODUCT_NAME","--pidfile","log/proxy.pid"]
         lifecycle:
           preStop:
             exec:
